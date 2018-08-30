@@ -451,10 +451,12 @@ public class AddressBook {
      */
     private static String executeFindPersons(String commandArgs) {
         final Set<String> keywords = extractKeywordsFromFindPersonArgs(commandArgs);
+        //final Set<String> lowerKeywords = makeNamesLowercase(keywords);
         final ArrayList<String[]> personsFound = getPersonsWithNameContainingAnyKeyword(keywords);
         showToUser(personsFound);
         return getMessageForPersonsDisplayedSummary(personsFound);
     }
+
 
     /**
      * Constructs a feedback message to summarise an operation that displayed a listing of persons.
@@ -486,12 +488,18 @@ public class AddressBook {
         final ArrayList<String[]> matchedPersons = new ArrayList<>();
         for (String[] person : getAllPersonsInAddressBook()) {
             final Set<String> wordsInName = new HashSet<>(splitByWhitespace(getNameFromPerson(person)));
+            if (!disjointIgnoreCase(wordsInName, keywords)) {
+                matchedPersons.add(person);
+            }
+            /*
             if (!Collections.disjoint(wordsInName, keywords)) {
                 matchedPersons.add(person);
             }
+            */
         }
         return matchedPersons;
     }
+
 
     /**
      * Deletes person identified using last displayed index.
@@ -839,7 +847,8 @@ public class AddressBook {
      * @param person whose name you want
      */
     private static String getNameFromPerson(String[] person) {
-        return person[PERSON_DATA_INDEX_NAME];
+        String name = person[PERSON_DATA_INDEX_NAME];
+        return name;
     }
 
     /**
@@ -1162,6 +1171,31 @@ public class AddressBook {
      */
     private static ArrayList<String> splitByWhitespace(String toSplit) {
         return new ArrayList<>(Arrays.asList(toSplit.trim().split("\\s+")));
+    }
+
+
+    /**
+     *
+     * @param set1 first parameter as a collection
+     * @param set2 second parameter as a collection
+     * @return boolean value of whether two collections are disjoint or not
+     */
+    private static boolean disjointIgnoreCase(Collection<String> set1, Collection<String> set2) {
+        return Collections.disjoint(makeNamesLowercase(set1), makeNamesLowercase(set2));
+    }
+
+    /**
+     * Make all the names in keywords lowercase
+     *
+     * @param keywords collection of case sensitive names from the user
+     * @return a set of lowercase names
+     */
+    private static Set<String> makeNamesLowercase(Collection<String> keywords) {
+        final Set<String> lowerKeywords = new HashSet<>();
+        for(String word : keywords) {
+            lowerKeywords.add(word.toLowerCase());
+        }
+        return lowerKeywords;
     }
 
 }
